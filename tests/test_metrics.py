@@ -9,6 +9,7 @@ import pytest
 from risk_toolkit import (
     annualized_volatility,
     beta,
+    calmar_ratio,
     sharpe_ratio,
     sortino_ratio,
 )
@@ -136,3 +137,27 @@ def test_beta_matches_numpy_definition():
 def test_beta_mismatched_lengths_raises():
     with pytest.raises(ValueError):
         beta([0.01, 0.02, 0.03], [0.01, 0.02])
+
+
+# --------------------------------------------------------------------------- #
+# calmar_ratio
+# --------------------------------------------------------------------------- #
+def test_calmar_ratio_known_value():
+    # Cumulative wealth: 1.10, 0.88, 0.968, 1.0164 -> total return 0.0164,
+    # max drawdown -0.20 (from peak 1.10 to trough 0.88).
+    # With periods_per_year == n_periods, annualization is a no-op, so the
+    # expected Calmar ratio is simply total_return / abs(max_drawdown).
+    returns = pd.Series([0.10, -0.20, 0.10, 0.05])
+    expected = 0.0164 / 0.20
+    assert calmar_ratio(returns, periods_per_year=4) == pytest.approx(expected, rel=1e-3)
+
+
+def test_calmar_ratio_zero_drawdown_raises():
+    returns = pd.Series([0.01, 0.02, 0.03])  # monotonically increasing, no decline
+    with pytest.raises(ValueError):
+        calmar_ratio(returns)
+
+
+def test_calmar_ratio_rejects_short_input():
+    with pytest.raises(ValueError):
+        calmar_ratio([0.01])

@@ -14,8 +14,11 @@ import numpy as np
 from risk_toolkit import (
     annualized_volatility,
     beta,
+    calmar_ratio,
+    historical_cvar,
     historical_var,
     max_drawdown,
+    parametric_cvar,
     parametric_var,
     prices_to_returns,
     sharpe_ratio,
@@ -98,6 +101,9 @@ def main() -> None:
 
     print(f"Historical VaR (95%)          : {historical_var(asset_returns, 0.95):.4%}")
     print(f"Parametric VaR (95%)          : {parametric_var(asset_returns, 0.95):.4%}")
+    print(f"Historical CVaR (95%)         : {historical_cvar(asset_returns, 0.95):.4%}")
+    print(f"Parametric CVaR (95%)         : {parametric_cvar(asset_returns, 0.95):.4%}")
+    print(f"Calmar ratio                  : {calmar_ratio(asset_returns):.4f}")
     print("=" * 52)
 
     # ----------------------------------------------------------------------- #

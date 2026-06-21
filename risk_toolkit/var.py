@@ -102,3 +102,74 @@ def parametric_var(returns: ReturnsInput, confidence_level: float = 0.95) -> flo
     # Lower-tail z-score, e.g. ~ -1.645 at 95% confidence.
     z = float(norm.ppf(1.0 - confidence_level))
     return mean + z * std
+
+
+def historical_cvar(returns: ReturnsInput, confidence_level: float = 0.95) -> float:
+    """Historical (empirical) Conditional Value at Risk (Expected Shortfall).
+
+    VaR is a loss threshold; CVaR is the average loss in the tail *beyond*
+    that threshold, making it a more conservative measure of tail risk.
+
+    Parameters
+    ----------
+    returns : sequence of float or pandas.Series
+        Periodic simple returns.
+    confidence_level : float, optional
+        Confidence level in the open interval ``(0, 1)``; ``0.95`` by default.
+
+    Returns
+    -------
+    float
+        The mean of all returns at or below the historical VaR threshold,
+        normally negative (a loss).
+
+    Raises
+    ------
+    ValueError
+        If ``returns`` is empty or ``confidence_level`` is not in ``(0, 1)``.
+    """
+    threshold = historical_var(returns, confidence_level)
+    returns = _as_series(returns)
+    tail = returns[returns <= threshold]
+    return float(tail.mean())
+
+
+def parametric_cvar(returns: ReturnsInput, confidence_level: float = 0.95) -> float:
+    """Parametric (Gaussian) Conditional Value at Risk (Expected Shortfall).
+
+    Assumes returns are normally distributed and computes the closed-form
+    expected loss in the tail beyond the parametric VaR threshold.
+
+    Parameters
+    ----------
+    returns : sequence of float or pandas.Series
+        Periodic simple returns.
+    confidence_level : float, optional
+        Confidence level in the open interval ``(0, 1)``; ``0.95`` by default.
+
+    Returns
+    -------
+    float
+        The CVaR as a return, normally negative (a loss), computed as
+        ``mean - std * (phi(z) / (1 - confidence_level))`` where ``z`` is the
+        lower-tail z-score and ``phi`` is the standard normal density at ``z``.
+
+    Raises
+    ------
+    ValueError
+        If ``returns`` has fewer than two observations or ``confidence_level``
+        is not in ``(0, 1)``.
+    """
+    _validate_confidence(confidence_level)
+    returns = _as_series(returns)
+    if len(returns) < 2:
+        raise ValueError(
+            "At least two returns are required to estimate parametric CVaR."
+        )
+
+    mean = float(returns.mean())
+    std = float(returns.std(ddof=1))
+
+    z = float(norm.ppf(1.0 - confidence_level))
+    phi_z = float(norm.pdf(z))
+    return mean - std * (phi_z / (1.0 - confidence_level))

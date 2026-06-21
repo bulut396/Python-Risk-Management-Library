@@ -60,6 +60,9 @@ print("VaR (95%)  :", historical_var(returns, confidence_level=0.95))
 | Maximum drawdown      | `max_drawdown(returns)`                    | Largest peak-to-trough loss, plus peak and trough locations   |
 | Historical VaR        | `historical_var(returns, confidence_level)` | Empirical loss threshold at a confidence level              |
 | Parametric VaR        | `parametric_var(returns, confidence_level)` | Gaussian loss threshold at a confidence level               |
+| Historical CVaR        | `historical_cvar(returns, confidence_level)` | Empirical average loss beyond the VaR threshold (Expected Shortfall) |
+| Parametric CVaR        | `parametric_cvar(returns, confidence_level)` | Gaussian average loss beyond the VaR threshold (Expected Shortfall)  |
+| Calmar ratio           | `calmar_ratio(returns)`                    | Annualized return relative to maximum drawdown               |
 
 ## Running Tests
 
@@ -67,6 +70,11 @@ print("VaR (95%)  :", historical_var(returns, confidence_level=0.95))
 pip install pytest
 pytest
 ```
+
+## Version History
+
+- **0.2.0** — Added Conditional VaR (historical & parametric) and Calmar Ratio.
+- **0.1.0** — Initial release: volatility, Sharpe, Sortino, beta, max drawdown, VaR.
 
 ## License
 

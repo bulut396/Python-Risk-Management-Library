@@ -12,6 +12,8 @@ from typing import Sequence, Union
 import numpy as np
 import pandas as pd
 
+from .drawdown import max_drawdown
+
 ReturnsInput = Union[Sequence[float], pd.Series]
 
 
@@ -193,3 +195,42 @@ def beta(asset_returns: ReturnsInput, market_returns: ReturnsInput) -> float:
 
     covariance = float(np.cov(asset, market, ddof=1)[0, 1])
     return covariance / market_var
+
+
+def calmar_ratio(returns: ReturnsInput, periods_per_year: int = 252) -> float:
+    """Calmar ratio: annualized return relative to maximum drawdown.
+
+    Parameters
+    ----------
+    returns : sequence of float or pandas.Series
+        Periodic simple returns.
+    periods_per_year : int, optional
+        Number of return periods in one year (252 trading days by default).
+
+    Returns
+    -------
+    float
+        ``annualized_return / abs(max_drawdown)``, where the annualized
+        return is derived from the total compounded return over the sample.
+
+    Raises
+    ------
+    ValueError
+        If fewer than two returns are supplied, or if the maximum drawdown is
+        zero (no decline ever occurred, making the ratio undefined).
+    """
+    returns = _as_series(returns)
+    if len(returns) < 2:
+        raise ValueError("At least two returns are required to compute the Calmar ratio.")
+
+    n_periods = len(returns)
+    total_return = float((1.0 + returns).prod() - 1.0)
+    annualized_return = (1.0 + total_return) ** (periods_per_year / n_periods) - 1.0
+
+    max_dd = max_drawdown(returns)["max_drawdown"]
+    if max_dd == 0:
+        raise ValueError(
+            "Maximum drawdown is zero; Calmar ratio is undefined."
+        )
+
+    return annualized_return / abs(max_dd)
