@@ -1,5 +1,7 @@
 # risk-toolkit
 
+[![CI](https://github.com/bulut396/Python-Risk-Management-Library/actions/workflows/ci.yml/badge.svg)](https://github.com/bulut396/Python-Risk-Management-Library/actions/workflows/ci.yml)
+
 A lightweight Python library for calculating financial risk and performance metrics for a portfolio or a single asset.
 
 ## Features
